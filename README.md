@@ -8,11 +8,9 @@ In Model Predictive Control (MPC) the task of following a trajectory can be seen
 In this project we implemented and used a kinematic model to model the vehicle. The kinematic model is a simplification of the dynamic model. It ignores forces, gravity and mass as opposed to a dynamic model and therefore maybe less accurate then the dynamic model.
 The model consists of a state and actuators:
 
-### State
-
-### Acuators
-
 ## Cost Function
+
+## Latency
 
 ---
 
