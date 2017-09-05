@@ -5,10 +5,12 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <string>
 #include "Eigen-3.3/Eigen/Core"
 #include "Eigen-3.3/Eigen/QR"
 #include "MPC.h"
 #include "json.hpp"
+#include "InputParser.h"
 
 // for convenience
 using json = nlohmann::json;
@@ -88,11 +90,59 @@ std::vector<double> transform_coordinates(double x, double y, double psi, double
 }
 
 
-int main() {
+void printUsage()
+{
+  cout << "Usage: mpc [-w weights | -v ref_v| -h]" << endl;
+  cout << "CmdLine args description:" << endl;
+  cout << "-w weights  The weights used in the cost function. A space separted string" << endl;
+  cout << "-v ref_v    The reference velocity" << endl;
+  cout << "-h         Help description" << endl;
+}
+
+int main(int argc, char **argv) 
+{
+  InputParser input(argc, argv);
+
+  if (input.cmdOptionExists("-h"))
+  {
+    printUsage();
+    return 0;
+  }
+
+  vector<int> weights = { 1, 1, 50, 5, 5, 2000, 10 };
+
+  if (input.cmdOptionExists("-w"))
+  {
+    auto weight_string = input.getCmdOption("-w");
+    istringstream iss(weight_string);
+    vector<string> result{ istream_iterator<string>(iss),{} };
+
+    assert(result.size() == 7);
+    weights.clear();
+
+    std::transform
+    (
+      result.begin(), 
+      result.end(), 
+      back_inserter(weights),
+      [](const string& str) { return stoi(str); }
+    );
+  }
+
+  // Both the reference cross track and orientation errors are 0.
+  // The reference velocity is set to 40 mph.
+  auto ref_v = 65.0;
+
+  if (input.cmdOptionExists("-v"))
+  {
+    const auto ref_v_string = input.getCmdOption("-v");
+    ref_v = stod(ref_v_string);
+  }
+
   uWS::Hub h;
 
   // MPC is initialized here!
-  MPC mpc;
+  MPC mpc(weights, ref_v);
 
   h.onMessage([&mpc](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -144,12 +194,7 @@ int main() {
           // 5.) Call MPC solver
           auto mpcOutput = mpc.Solve(state, coeffs);
 
-          /*
-          * TODO: Calculate steering angle and throttle using MPC.
-          *
-          * Both are in between [-1, 1].
-          *
-          */
+          // Calculate steering angle and throttle using MPC.
           auto steer_value = -1 * (mpcOutput.delta[2] / 0.436332);
           auto throttle_value = mpcOutput.a[2];
 
@@ -184,6 +229,7 @@ int main() {
 
 
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
+
           //std::cout << msg << std::endl;
           // Latency
           // The purpose is to mimic real driving conditions where

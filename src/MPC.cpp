@@ -6,21 +6,9 @@
 
 using CppAD::AD;
 
-// TODO: Set the timestep length and duration
-size_t N = 12;
-double dt = 0.05;
-
-// This value assumes the model presented in the classroom is used.
-//
-// It was obtained by measuring the radius formed by running the vehicle in the
-// simulator around in a circle with a constant steering angle and velocity on a
-// flat terrain.
-//
-// Lf was tuned until the the radius formed by the simulating the model
-// presented in the classroom matched the previous radius.
-//
-// This is the length from front to CoG that has a similar radius.
-const double Lf = 2.67;
+// Timestep length and duration
+const size_t N = 15;
+const auto dt = 0.05;
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -31,44 +19,70 @@ size_t epsi_start = cte_start + N;
 size_t delta_start = epsi_start + N;
 size_t a_start = delta_start + N - 1;
 
-// Both the reference cross track and orientation errors are 0.
-// The reference velocity is set to 40 mph.
-double ref_v = 75;
 
+class FG_eval 
+{
+private:
+  // This value assumes the model presented in the classroom is used.
+  //
+  // It was obtained by measuring the radius formed by running the vehicle in the
+  // simulator around in a circle with a constant steering angle and velocity on a
+  // flat terrain.
+  //
+  // Lf was tuned until the the radius formed by the simulating the model
+  // presented in the classroom matched the previous radius.
+  //
+  // This is the length from front to CoG that has a similar radius.
+  const double Lf = 2.67;
 
-class FG_eval {
- public:
   // Fitted polynomial coefficients
-  Eigen::VectorXd coeffs;
-  FG_eval(Eigen::VectorXd coeffs) { this->coeffs = coeffs; }
+  Eigen::VectorXd _coeffs;
+
+  vector<int> _weights;
+
+  double ref_v;
+public:
+
+
+  FG_eval(Eigen::VectorXd coeffs, const vector<int>& weights, double ref_v)
+    : _coeffs(coeffs), _weights(weights), ref_v(ref_v)
+  {
+    assert(_weights.size() == 7);
+  }
 
   typedef CPPAD_TESTVECTOR(AD<double>) ADvector;
 
   void operator()(ADvector& fg, const ADvector& vars) {
+    const auto w1 = _weights[0];
+    const auto w2 = _weights[1];
+    const auto w3 = _weights[2];
+    const auto w4 = _weights[3];
+    const auto w5 = _weights[4];
+    const auto w6 = _weights[5];
+    const auto w7 = _weights[6];
+
+
     // The cost is stored is the first element of `fg`.
     // Any additions to the cost should be added to `fg[0]`.
     fg[0] = 0;
 
     // The part of the cost based on the reference state.
     for (size_t t = 0; t < N; t++) {
-      fg[0] += CppAD::pow(vars[cte_start + t], 2);
-      fg[0] += 10*CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+      fg[0] += w1 * CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += w2 * CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += w3 * CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
 
     // Minimize the use of actuators.
     for (size_t t = 0; t < N - 1; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t], 2);
-      //fg[0] += CppAD::pow(1 + vars[epsi_start + t], 2)*CppAD::pow(1 + vars[cte_start + t], 2)*CppAD::pow(vars[a_start + t], 2);
-      //fg[0] += vars[cte_start + t]*CppAD::pow(vars[a_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t], 2);
-      //fg[0] += CppAD::pow((1 + vars[epsi_start + t])*(1 + vars[cte_start + t]), 2)*CppAD::pow(vars[a_start + t], 2);
+      fg[0] += w4 * CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += w5 * CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (size_t t = 0; t < N - 2; t++) {
-      fg[0] += 2000*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+      fg[0] += w6 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += w7 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
     // Initial constraints
@@ -102,8 +116,8 @@ class FG_eval {
       // Only consider the actuation at time t.
       AD<double> delta0   = vars[delta_start + t-1];
       AD<double> a0       = vars[a_start + t-1];
-      AD<double> f0       = coeffs[0] + coeffs[1]*x0 + coeffs[2]*x0*x0 + coeffs[3]*x0*x0*x0;
-      AD<double> psides0  = CppAD::atan(coeffs[1] + 2*coeffs[2]*x0 + 3*coeffs[3]*x0*x0);
+      AD<double> f0       = _coeffs[0] + _coeffs[1]*x0 + _coeffs[2]*x0*x0 + _coeffs[3]*x0*x0*x0;
+      AD<double> psides0  = CppAD::atan(_coeffs[1] + 2*_coeffs[2]*x0 + 3*_coeffs[3]*x0*x0);
 
       // Here's `x` to get you started.
       // The idea here is to constraint this value to be 0.
@@ -125,11 +139,6 @@ class FG_eval {
   }
 };
 
-//
-// MPC class definition implementation.
-//
-MPC::MPC() {}
-MPC::~MPC() {}
 
 MpcOutput MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   auto ok = true;
@@ -218,7 +227,7 @@ MpcOutput MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   constraints_upperbound[epsi_start]  = epsi;
 
   // object that computes objective and constraints
-  FG_eval fg_eval(coeffs);
+  FG_eval fg_eval(coeffs, weights, ref_v);
 
   //
   // NOTE: You don't have to worry about these options
@@ -266,10 +275,6 @@ MpcOutput MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
     output.delta.push_back(solution.x[delta_start + i]);
     output.a.push_back(solution.x[a_start + i]);
   }
-
-  // Cost
-  //auto cost = solution.obj_value;
-  //cout << "Cost " << cost << endl;
 
   return output;
 }
