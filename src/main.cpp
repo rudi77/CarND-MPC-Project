@@ -107,7 +107,7 @@ int main(int argc, char **argv)
     return 0;
   }
 
-  vector<int> weights = { 1, 1, 50, 5, 5, 2000, 10 };
+  vector<int> weights = { 1, 10, 200, 200, 5, 2000, 100 };
 
   if (input.cmdOptionExists("-w"))
   {
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 
   // Both the reference cross track and orientation errors are 0.
   // The reference velocity is set to 40 mph.
-  auto ref_v = 65.0;
+  auto ref_v = 80.0;
 
   if (input.cmdOptionExists("-v"))
   {
@@ -165,7 +165,10 @@ int main(int argc, char **argv)
           double px   = j[1]["x"];
           double py   = j[1]["y"];
           double psi  = j[1]["psi"];
-          double v  = j[1]["speed"];
+          double v    = j[1]["speed"];
+          double d    = j[1]["steering_angle"];
+          double a    = j[1]["throttle"];
+
 
           // 1.) Transform waypoints into vehicles coordinate system
           assert(ptsx.size() == ptsy.size());
@@ -187,7 +190,19 @@ int main(int argc, char **argv)
 
           // 4.) Create state vector
           Eigen::VectorXd state(6);
-          state << 0, 0, 0, v, cte, epsi;
+
+          // predict state in 100ms
+          const auto latency = 0.1;
+          const auto LF = 2.67;
+          px = 0 + v*latency;
+          py = 0;
+          psi = -v*d / LF*latency;
+          v = v + a*latency;
+          cte = cte + v * sin(epsi) * latency;
+          epsi = epsi + v*(-d) / LF * latency;
+
+          state << px, py, psi, v, cte, epsi;
+          //state << 0, 0, 0, v, cte, epsi;
 
           // 5.) Call MPC solver and retrieve optimal trajectory
           auto mpcOutput = mpc.Solve(state, coeffs);
