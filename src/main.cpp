@@ -1,4 +1,4 @@
-#include <assert.h>
+﻿#include <assert.h>
 #include <math.h>
 #include <uWS/uWS.h>
 #include <chrono>
@@ -67,7 +67,6 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals, int order)
   return result;
 }
 
-
 /* Converts coordinates from one coordinate system into another one
 * @param x x position in the target coordinate system.
 * @param y y position in the target coordinate system.
@@ -88,7 +87,6 @@ std::vector<double> transform_coordinates(double x, double y, double psi, double
 
   return { x_new, y_new };
 }
-
 
 void printUsage()
 {
@@ -169,7 +167,7 @@ int main(int argc, char **argv)
           double psi  = j[1]["psi"];
           double v  = j[1]["speed"];
 
-          // 1.) Transform waypoints into local coordinate system
+          // 1.) Transform waypoints into vehicles coordinate system
           assert(ptsx.size() == ptsy.size());
           auto wpoints = Eigen::MatrixXd(2, ptsx.size());
 
@@ -191,12 +189,16 @@ int main(int argc, char **argv)
           Eigen::VectorXd state(6);
           state << 0, 0, 0, v, cte, epsi;
 
-          // 5.) Call MPC solver
+          // 5.) Call MPC solver and retrieve optimal trajectory
           auto mpcOutput = mpc.Solve(state, coeffs);
 
-          // Calculate steering angle and throttle using MPC.
-          auto steer_value = -1 * (mpcOutput.delta[2] / 0.436332);
-          auto throttle_value = mpcOutput.a[2];
+          // 6.) Calculate steering angle and throttle using MPC.
+          // Tips and Tricks provided by Udacity:Note if δ is positive we rotate counter - clockwise, or turn left.
+          // In the simulator however, a positive value implies a right turn and a 
+          // negative value implies a left turn
+          const auto delay_index = 2;
+          auto steer_value = -1 * (mpcOutput.delta[delay_index] / 0.436332);
+          auto throttle_value = mpcOutput.a[delay_index];
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
