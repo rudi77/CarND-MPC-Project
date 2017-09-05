@@ -4,8 +4,6 @@ This is the last project of the second term. The objective of this project is to
 ## Model Predictive Control
 In Model Predictive Control (MPC) the task of following a trajectory can be seen as an optimization problem. The solution to this problem is an optimal trajectory. MPC involves simulating different actuator inputs, predicting trajectories and selecting the optimal trajectory, i.e. the one with the minimum cost. The optimal trajectory is re-calculated at every timestamp. Thus, it dynamically adapts its trajectory constantly.
 
-With regard to this project the MPC takes as input the position of the vehicle, its orientation and velocity as well as a reference trajectory in form of waypoints. All these values are provided by the simulator.
-
 ## Kinematic Model
 In this project we implemented and used a kinematic model to model the vehicle. The kinematic model is a simplification of the dynamic model. It ignores forces, gravity and mass as opposed to a dynamic model and therefore maybe less accurate then the dynamic model.
 The model consists of a state and actuators:
