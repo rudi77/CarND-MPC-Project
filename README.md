@@ -17,19 +17,6 @@ CmdLine args description:
 -v ref_v    The reference velocity
 -h          Help description
 ```
-
-
-## Model Predictive Control
-In Model Predictive Control (MPC) the task of following a trajectory can be seen as an optimization problem. The solution to this problem is an optimal trajectory. MPC involves simulating different actuator inputs, predicting trajectories and selecting the optimal trajectory, i.e. the one with the minimum cost. The optimal trajectory is re-calculated at every timestamp. Thus, it dynamically adapts its trajectory constantly.
-
-### MPC Algorithm
-1.) Define duration of trajectory T: This means that we have to define N and dt where N is the number of steps and dt is the duration of one timestep. A large N and a small dt provides very accurate results but also increases the computational cost and latency. A smaller N and a larger dt returns solutions which are more inaccurate but increases responsiveness of the controller. After some trial and error I defined N=15 and dt=0.05.
-
-2.) Define the vehicle model and constraints.
-
-3.) Define the cost function: The cost function should minimize the CTE and EPSI and is defined as follows.
-
-
 ## Kinematic Model
 In this project we implemented and used a kinematic model to model the vehicle. The kinematic model is a simplification of the dynamic model. It ignores forces, gravity and mass as opposed to a dynamic model and therefore maybe less accurate then the dynamic model.
 The model consists of a state, actuators and state update equations:
@@ -84,6 +71,36 @@ The actuators or the control inputs are the steering_angle and the throttle valu
 <a href="url"><img src="https://github.com/rudi77/CarND-MPC-Project/blob/master/images/kinematic_model.png" align="center" height="340" width="480"></a>
 
 These equations are implemented in the FG_eval class.
+
+
+## Model Predictive Control
+In Model Predictive Control (MPC) the task of following a trajectory can be seen as an optimization problem. The solution to this problem is an optimal trajectory. MPC involves simulating different actuator inputs, predicting trajectories and selecting the optimal trajectory, i.e. the one with the minimum cost. The optimal trajectory is re-calculated at every timestamp. Thus, it dynamically adapts its trajectory constantly.
+
+### Polynomial Fitting and MPC Preprocessing
+The simulator does not only provided the state information of the vehicle but also the reference trajectory in form of waypoints. These waypoints are used to fit a third order polynomial. The following steps are carried out:
+1.) Transform waypoint coordinates: The waypoint coordinates are given in the map's coordinate system which is different to the car's one. The coordinate transformation is done in the  `ransform_coordinates(...)` function in the main.c file:
+```c++
+vector<double> transform_coordinates(double x, double y, double psi, double x0, double y0)
+{
+  auto cos_psi = cos(psi);
+  auto sin_psi = sin(psi);
+
+  // Rotation + Translation
+  auto x_new = cos_psi * (x0-x) + sin_psi * (y0-y);
+  auto y_new = -sin_psi * (x0-x) + cos_psi * (y0-y);
+
+  return { x_new, y_new };
+}
+```
+
+2.) Compute the third order polynom.
+
+### MPC Algorithm
+1.) Define duration of trajectory T: This means that we have to define N and dt where N is the number of steps and dt is the duration of one timestep. A large N and a small dt provides very accurate results but also increases the computational cost and latency. A smaller N and a larger dt returns solutions which are more inaccurate but increases responsiveness of the controller. After some trial and error I defined N=15 and dt=0.05.
+
+2.) Define the vehicle model and constraints.
+
+3.) Define the cost function: The cost function should minimize the CTE and EPSI and is defined as follows.
 
 ---
 
