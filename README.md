@@ -170,6 +170,13 @@ for t in 1..N
        + w6*(delta_t_1 - delta_t) + w7*(a_t_1 - a_t)
 ```
 
+The weights w1 to w7 are used to penalize each term in the function separately. I tried (manually) different weight values and finally
+used the following values. They are by no means optimal but worked for me at least up to 80 mph.
+```c++
+  // Default weights used in the cost function
+  vector<double> weights = { 1, 10, 200, 200, 5, 2000, 100 };
+```
+
 ---
 
 ## Dependencies
