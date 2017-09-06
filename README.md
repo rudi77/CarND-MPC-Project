@@ -22,14 +22,26 @@ CmdLine args description:
 ## Model Predictive Control
 In Model Predictive Control (MPC) the task of following a trajectory can be seen as an optimization problem. The solution to this problem is an optimal trajectory. MPC involves simulating different actuator inputs, predicting trajectories and selecting the optimal trajectory, i.e. the one with the minimum cost. The optimal trajectory is re-calculated at every timestamp. Thus, it dynamically adapts its trajectory constantly.
 
+### Cost Function
+The cost function should minimize the CTE and EPSI.
+
 ## Kinematic Model
 In this project we implemented and used a kinematic model to model the vehicle. The kinematic model is a simplification of the dynamic model. It ignores forces, gravity and mass as opposed to a dynamic model and therefore maybe less accurate then the dynamic model.
-The model consists of a state and actuators:
+The model can be described with the following equations:
 
+<a href="url"><img src="https://github.com/rudi77/CarND-MPC-Project/blob/master/images/kinematic_model.png" align="center" height="340" width="480"></a>
 
-## Cost Function
+### Vehicle's State
+The vehicle's state can be described by:
+- Position (x,y)
+- Orientation (psi) 
+- Velocity (v)
+- Cross Track Error (cte): Offset from the center of the lane to the car.
+- Orientation Error (epsi): Desired orientation subtracted from the current orientation.
 
-## Latency
+All values but CTE and EPSI are provided by the simulator for every timestep t. CTE and EPSI are calculated.
+
+### Latency
 
 ---
 
