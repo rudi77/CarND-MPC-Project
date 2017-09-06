@@ -189,8 +189,8 @@ int main(int argc, char **argv)
           auto coeffs = polyfit(wpoints.row(0), wpoints.row(1), 3);
 
           // 3.) Compute cte and epsi
-          auto cte  = polyeval(coeffs, 0);
-          auto epsi = -atan(coeffs[1]);
+          const auto cte  = polyeval(coeffs, 0);
+          const auto epsi = -atan(coeffs[1]);
 
           // 4.) Create state vector
           VehicleState vState = { 0, 0, v, psi, cte, epsi, d, a };
@@ -199,15 +199,15 @@ int main(int argc, char **argv)
           const auto future_state = vState.State();
 
           // 6.) Call MPC solver and retrieve optimal trajectory
-          auto mpcOutput = mpc.Solve(future_state, coeffs);
+          const auto mpcOutput = mpc.Solve(future_state, coeffs);
 
           // 7.) Calculate steering angle and throttle using MPC.
           // Tips and Tricks provided by Udacity:Note if δ is positive we rotate counter - clockwise, or turn left.
           // In the simulator however, a positive value implies a right turn and a 
           // negative value implies a left turn
           const auto delay_index = 1;
-          auto steer_value = -1 * (mpcOutput.delta[delay_index] / 0.436332);
-          auto throttle_value = mpcOutput.a[delay_index];
+          const auto steer_value = -1 * (mpcOutput.delta[delay_index] / 0.436332);
+          const auto throttle_value = mpcOutput.a[delay_index];
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
