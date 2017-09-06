@@ -11,6 +11,7 @@
 #include "MPC.h"
 #include "json.hpp"
 #include "InputParser.h"
+#include "VehicleState.h"
 
 // for convenience
 using json = nlohmann::json;
@@ -110,7 +111,11 @@ int main(int argc, char **argv)
     return 0;
   }
 
-  vector<int> weights = { 1, 10, 200, 200, 5, 2000, 100 };
+  // Default weights used in the cost function
+  vector<double> weights = { 1, 10, 200, 200, 5, 2000, 100 };
+
+  // The reference velocity
+  auto ref_v = 80.0;
 
   if (input.cmdOptionExists("-w"))
   {
@@ -126,13 +131,9 @@ int main(int argc, char **argv)
       result.begin(), 
       result.end(), 
       back_inserter(weights),
-      [](const string& str) { return stoi(str); }
+      [](const string& str) { return stod(str); }
     );
   }
-
-  // Both the reference cross track and orientation errors are 0.
-  // The reference velocity is set to 40 mph.
-  auto ref_v = 80.0;
 
   if (input.cmdOptionExists("-v"))
   {
@@ -184,7 +185,7 @@ int main(int argc, char **argv)
             wpoints(1, i) = p_new[1];
           }
           
-          // 2.) Compute polynom of third order
+          // 2.) Compute polynom of third order for reference trajectory
           auto coeffs = polyfit(wpoints.row(0), wpoints.row(1), 3);
 
           // 3.) Compute cte and epsi
@@ -192,29 +193,19 @@ int main(int argc, char **argv)
           auto epsi = -atan(coeffs[1]);
 
           // 4.) Create state vector
-          Eigen::VectorXd state(6);
+          VehicleState vState = { 0, 0, v, psi, cte, epsi, d, a };
 
-          // predict state in 100ms
-          const auto latency = 0.1;
-          const auto LF = 2.67;
-          px = 0 + v*latency;
-          py = 0;
-          psi = -v*d / LF*latency;
-          v = v + a*latency;
-          cte = cte + v * sin(epsi) * latency;
-          epsi = epsi + v*(-d) / LF * latency;
+          // 5.) Predict state in 100ms
+          const auto future_state = vState.State();
 
-          state << px, py, psi, v, cte, epsi;
-          //state << 0, 0, 0, v, cte, epsi;
+          // 6.) Call MPC solver and retrieve optimal trajectory
+          auto mpcOutput = mpc.Solve(future_state, coeffs);
 
-          // 5.) Call MPC solver and retrieve optimal trajectory
-          auto mpcOutput = mpc.Solve(state, coeffs);
-
-          // 6.) Calculate steering angle and throttle using MPC.
+          // 7.) Calculate steering angle and throttle using MPC.
           // Tips and Tricks provided by Udacity:Note if δ is positive we rotate counter - clockwise, or turn left.
           // In the simulator however, a positive value implies a right turn and a 
           // negative value implies a left turn
-          const auto delay_index = 2;
+          const auto delay_index = 1;
           auto steer_value = -1 * (mpcOutput.delta[delay_index] / 0.436332);
           auto throttle_value = mpcOutput.a[delay_index];
 

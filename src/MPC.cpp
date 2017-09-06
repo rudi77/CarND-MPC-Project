@@ -13,13 +13,13 @@ class FG_eval
   // Fitted polynomial coefficients
   Eigen::VectorXd _coeffs;
 
-  vector<int> _weights;
+  vector<double> _weights;
 
   double ref_v;
 public:
 
-
-  FG_eval(Eigen::VectorXd coeffs, const vector<int>& weights, double ref_v)
+  
+  FG_eval(Eigen::VectorXd coeffs, const vector<double>& weights, double ref_v)
     : _coeffs(coeffs), _weights(weights), ref_v(ref_v)
   {
     assert(_weights.size() == 7);

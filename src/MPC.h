@@ -9,11 +9,11 @@ using namespace std;
 
 class MPC {
 private:
-  vector<int> weights; 
+  vector<double> weights; 
   double ref_v;
 
 public:
-  MPC(const vector<int>& weights, double ref_v)
+  MPC(const vector<double>& weights, double ref_v)
     : weights(weights), ref_v(ref_v)
   {}
 
