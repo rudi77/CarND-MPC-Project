@@ -22,6 +22,9 @@ CmdLine args description:
 ## Model Predictive Control
 In Model Predictive Control (MPC) the task of following a trajectory can be seen as an optimization problem. The solution to this problem is an optimal trajectory. MPC involves simulating different actuator inputs, predicting trajectories and selecting the optimal trajectory, i.e. the one with the minimum cost. The optimal trajectory is re-calculated at every timestamp. Thus, it dynamically adapts its trajectory constantly.
 
+### MPC Algorithm
+1.) Define duration of trajectory T: This means that we have to define N and dt where N is the number of steps and dt is the duration of one timestep.
+
 ### Cost Function
 The cost function should minimize the CTE and EPSI.
 
@@ -41,8 +44,38 @@ The vehicle's state can be described by:
 
 All values but CTE and EPSI are provided by the simulator for every timestep t. CTE and EPSI are calculated.
 
-### Latency
+I implemented a struct which encapsulates the vehicle's state. In a real system there will always be a certain delay when a command (actuation) is propagated through the system. Within this project we simulated this kind of delay. We assumed a delay of 100 ms. This delay is modeled as dynamic system and is embedded in the vehicle model. There are different approaches to handle this delay. One is to run a simulation starting with the current state of the vehicle model for the duration of the latency. During this time we assume that v is constant. This simulation is implemented in the `FutureState(latency)` method.
+```c++
+// Keeps the vehicle's state
+struct VehicleState
+{
+  double px;
+  double py;
+  double v;
+  double psi;
+  double cte;
+  double epsi;
+  double delta;
+  double acceleration;
 
+  // Returns the vehicle's state taking a certain delay into account.
+  Eigen::VectorXd FutureState(double latency = 0.1)
+  {
+    Eigen::VectorXd state(6);
+
+    px = 0 + v*latency;
+    py = 0;
+    psi = -v*delta / Mpc::Lf*latency;
+    v = v + acceleration*latency;
+    cte = cte + v * sin(epsi) * latency;
+    epsi = epsi + v*(-delta) / Mpc::Lf * latency;
+
+    state << px, py, psi, v, cte, epsi;
+
+    return state;
+  }
+};
+```
 ---
 
 ## Dependencies
