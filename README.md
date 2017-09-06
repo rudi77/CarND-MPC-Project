@@ -1,12 +1,29 @@
 # CarND-Controls-MPC
 This is the last project of the second term. The objective of this project is to implement a model predictive controller that is able to drive the car in the simulator safely around the lake track.
 
+## Program Usage
+- Clone the project from (https://github.com/rudi77/CarND-MPC-Project.git)
+- Install all dependencies, see "Dependencies" below.
+- Build the program, see "Basic Build Instructions" below
+- Run it: ./mpc
+- You can also run it with command line arguments:
+```
+rudi@pc1:/Udacity/CarND-MPC-Project/build$ ./mpc -h
+Usage: mpc [-w weights | -v ref_v| -h]
+CmdLine args description:
+-w weights  The weights used in the cost function. A space separted string consisting of 7 weights (must be INTEGERS), e.g "1 10 15 1 1000 1 1"
+-v ref_v    The reference velocity
+-h          Help description
+```
+
+
 ## Model Predictive Control
 In Model Predictive Control (MPC) the task of following a trajectory can be seen as an optimization problem. The solution to this problem is an optimal trajectory. MPC involves simulating different actuator inputs, predicting trajectories and selecting the optimal trajectory, i.e. the one with the minimum cost. The optimal trajectory is re-calculated at every timestamp. Thus, it dynamically adapts its trajectory constantly.
 
 ## Kinematic Model
 In this project we implemented and used a kinematic model to model the vehicle. The kinematic model is a simplification of the dynamic model. It ignores forces, gravity and mass as opposed to a dynamic model and therefore maybe less accurate then the dynamic model.
 The model consists of a state and actuators:
+
 
 ## Cost Function
 
