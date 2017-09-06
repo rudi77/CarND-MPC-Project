@@ -24,11 +24,11 @@ In Model Predictive Control (MPC) the task of following a trajectory can be seen
 
 ### MPC Algorithm
 1.) Define duration of trajectory T: This means that we have to define N and dt where N is the number of steps and dt is the duration of one timestep. A large N and a small dt provides very accurate results but also increases the computational cost and latency. A smaller N and a larger dt returns solutions which are more inaccurate but increases responsiveness of the controller. After some trial and error I defined N=15 and dt=0.05.
-2.) Define the vehicle model and constraints.
-3.) Define the cost function.
 
-### Cost Function
-The cost function should minimize the CTE and EPSI.
+2.) Define the vehicle model and constraints.
+
+3.) Define the cost function: The cost function should minimize the CTE and EPSI and is defined as follows.
+
 
 ## Kinematic Model
 In this project we implemented and used a kinematic model to model the vehicle. The kinematic model is a simplification of the dynamic model. It ignores forces, gravity and mass as opposed to a dynamic model and therefore maybe less accurate then the dynamic model.
