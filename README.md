@@ -32,10 +32,7 @@ In Model Predictive Control (MPC) the task of following a trajectory can be seen
 
 ## Kinematic Model
 In this project we implemented and used a kinematic model to model the vehicle. The kinematic model is a simplification of the dynamic model. It ignores forces, gravity and mass as opposed to a dynamic model and therefore maybe less accurate then the dynamic model.
-The model can be described with the following equations:
-
-<a href="url"><img src="https://github.com/rudi77/CarND-MPC-Project/blob/master/images/kinematic_model.png" align="center" height="340" width="480"></a>
-
+The model consists of a state, actuators and state update equations:
 ### Vehicle's State
 The vehicle's state can be described by:
 - Position (x,y)
@@ -79,6 +76,11 @@ struct VehicleState
 ```
 
 The vehicle's position (px, py) and its orientation psi are initially always 0.
+
+### Actuators
+
+### Update Equations
+<a href="url"><img src="https://github.com/rudi77/CarND-MPC-Project/blob/master/images/kinematic_model.png" align="center" height="340" width="480"></a>
 
 ---
 
