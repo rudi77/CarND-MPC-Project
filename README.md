@@ -23,7 +23,9 @@ CmdLine args description:
 In Model Predictive Control (MPC) the task of following a trajectory can be seen as an optimization problem. The solution to this problem is an optimal trajectory. MPC involves simulating different actuator inputs, predicting trajectories and selecting the optimal trajectory, i.e. the one with the minimum cost. The optimal trajectory is re-calculated at every timestamp. Thus, it dynamically adapts its trajectory constantly.
 
 ### MPC Algorithm
-1.) Define duration of trajectory T: This means that we have to define N and dt where N is the number of steps and dt is the duration of one timestep.
+1.) Define duration of trajectory T: This means that we have to define N and dt where N is the number of steps and dt is the duration of one timestep. A large N and a small dt provides very accurate results but also increases the computational cost and latency. A smaller N and a larger dt returns solutions which are more inaccurate but increases responsiveness of the controller. After some trial and error I defined N=15 and dt=0.05.
+2.) Define the vehicle model and constraints.
+3.) Define the cost function.
 
 ### Cost Function
 The cost function should minimize the CTE and EPSI.
