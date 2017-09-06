@@ -76,7 +76,7 @@ Eigen::VectorXd polyfit(Eigen::VectorXd xvals, Eigen::VectorXd yvals, int order)
 *
 * @return The new coordinates in the destination coordinate system.
 */
-std::vector<double> transform_coordinates(double x, double y, double psi, double x0, double y0)
+vector<double> transform_coordinates(double x, double y, double psi, double x0, double y0)
 {
   auto cos_psi = cos(psi);
   auto sin_psi = sin(psi);
@@ -87,6 +87,8 @@ std::vector<double> transform_coordinates(double x, double y, double psi, double
 
   return { x_new, y_new };
 }
+
+
 
 void printUsage()
 {
@@ -99,6 +101,7 @@ void printUsage()
 
 int main(int argc, char **argv) 
 {
+  // Used to read possible command line arguments
   InputParser input(argc, argv);
 
   if (input.cmdOptionExists("-h"))
