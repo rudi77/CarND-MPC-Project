@@ -105,9 +105,70 @@ vector<double> transform_coordinates(double x, double y, double psi, double x0, 
 ### MPC Algorithm
 1.) Define duration of trajectory T: This means that we have to define N and dt where N is the number of steps and dt is the duration of one timestep. A large N and a small dt provides very accurate results but also increases the computational cost and latency. A smaller N and a larger dt returns solutions which are more inaccurate but increases responsiveness of the controller. After some trial and error I defined N=15 and dt=0.05.
 
-2.) Define the vehicle model and constraints.
+2.) Define the vehicle model and constraints. The constaints were taken from the quiz without any modifications:
+```c++
+ // Lower and upper limits for x
+  Dvector vars_lowerbound(n_vars);
+  Dvector vars_upperbound(n_vars);
 
-3.) Define the cost function: The cost function should minimize the CTE and EPSI and is defined as follows.
+  // Set all non-actuators upper and lowerlimits
+  // to the max negative and positive values.
+  for (size_t i = 0; i < Mpc::delta_start; i++)
+  {
+    vars_lowerbound[i] = -1.0e19;
+    vars_upperbound[i] = 1.0e19;
+  }
+
+  // The upper and lower limits of delta are set to -25 and 25
+  // degrees (values in radians).
+  // NOTE: Feel free to change this to something else.
+  for (size_t i = Mpc::delta_start; i < Mpc::a_start; i++)
+  {
+    vars_lowerbound[i] = -0.436332;
+    vars_upperbound[i] = 0.436332;
+  }
+
+  // Acceleration/decceleration upper and lower limits.
+  // NOTE: Feel free to change this to something else.
+  for (size_t i = Mpc::a_start; i < n_vars; i++) {
+    vars_lowerbound[i] = -1.0;
+    vars_upperbound[i] = 1.0;
+  }
+
+  // Lower and upper limits for constraints
+  // All of these should be 0 except the initial
+  // state indices.
+  Dvector constraints_lowerbound(n_constraints);
+  Dvector constraints_upperbound(n_constraints);
+
+  for (size_t i = 0; i < n_constraints; i++) 
+  {
+    constraints_lowerbound[i] = 0;
+    constraints_upperbound[i] = 0;
+  }
+
+  constraints_lowerbound[Mpc::x_start]     = x;
+  constraints_lowerbound[Mpc::y_start]     = y;
+  constraints_lowerbound[Mpc::psi_start]   = psi;
+  constraints_lowerbound[Mpc::v_start]     = v;
+  constraints_lowerbound[Mpc::cte_start]   = cte;
+  constraints_lowerbound[Mpc::epsi_start]  = epsi;
+
+  constraints_upperbound[Mpc::x_start]     = x;
+  constraints_upperbound[Mpc::y_start]     = y;
+  constraints_upperbound[Mpc::psi_start]   = psi;
+  constraints_upperbound[Mpc::v_start]     = v;
+  constraints_upperbound[Mpc::cte_start]   = cte;
+  constraints_upperbound[Mpc::epsi_start]  = epsi;
+```
+
+3.) Define the cost function: The cost function should minimize the CTE and EPSI and is defined as follows (in pseudo code)
+```c++
+for t in 1..N
+  cost += w1*cte_t^2 + w2*epsi_t^2 + w3*(v_t - v_ref)^2 
+       + w4*delta_t^2 + w5*a^2 
+       + w6*(delta_t_1 - delta_t) + w7*(a_t_1 - a_t)
+```
 
 ---
 
