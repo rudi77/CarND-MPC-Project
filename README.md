@@ -77,7 +77,7 @@ These equations are implemented in the FG_eval class.
 In Model Predictive Control (MPC) the task of following a trajectory can be seen as an optimization problem. The solution to this problem is an optimal trajectory. MPC involves simulating different actuator inputs, predicting trajectories and selecting the optimal trajectory, i.e. the one with the minimum cost. The optimal trajectory is re-calculated at every timestamp. Thus, it dynamically adapts its trajectory constantly.
 
 ### Polynomial Fitting and MPC Preprocessing
-The simulator does not only provided the state information of the vehicle but also the reference trajectory in form of waypoints. These waypoints are used to fit a third order polynomial. The following steps are carried out:
+The simulator does not only provided the state information of the vehicle but also the reference trajectory in form of waypoints. These waypoints are used to fit a third order polynomial. The computed coefficients are then used to calculate the CTE and EPSI The following steps are carried out:
 1.) Transform waypoint coordinates: The waypoint coordinates are given in the map's coordinate system which is different to the car's one. The coordinate transformation is done in the  `ransform_coordinates(...)` function in the main.c file:
 ```c++
 vector<double> transform_coordinates(double x, double y, double psi, double x0, double y0)
@@ -94,6 +94,13 @@ vector<double> transform_coordinates(double x, double y, double psi, double x0, 
 ```
 
 2.) Compute the third order polynom.
+3.) Calculate the CTE and EPSI: This is directly done in the main function:
+```c++
+  ...
+  const auto cte  = polyeval(coeffs, 0);
+  const auto epsi = -atan(coeffs[1]);
+  ...
+```
 
 ### MPC Algorithm
 1.) Define duration of trajectory T: This means that we have to define N and dt where N is the number of steps and dt is the duration of one timestep. A large N and a small dt provides very accurate results but also increases the computational cost and latency. A smaller N and a larger dt returns solutions which are more inaccurate but increases responsiveness of the controller. After some trial and error I defined N=15 and dt=0.05.
