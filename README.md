@@ -78,9 +78,12 @@ struct VehicleState
 The vehicle's position (px, py) and its orientation psi are initially always 0.
 
 ### Actuators
+The actuators or the control inputs are the steering_angle and the throttle value. Both values are also provided by the simulator at each timestep t.
 
 ### Update Equations
 <a href="url"><img src="https://github.com/rudi77/CarND-MPC-Project/blob/master/images/kinematic_model.png" align="center" height="340" width="480"></a>
+
+These equations are implemented in the FG_eval class.
 
 ---
 
