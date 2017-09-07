@@ -16,13 +16,13 @@ struct VehicleState
   double acceleration;
 
   // Returns the vehicle's state taking a certain delay into account.
-  Eigen::VectorXd State(double latency = 0.1)
+  Eigen::VectorXd FutureState(double latency = 0.1)
   {
     Eigen::VectorXd state(6);
 
     px = 0 + v*latency;
     py = 0;
-    psi = -v*delta / Mpc::Lf*latency;
+    psi = 0 -v*delta / Mpc::Lf*latency;
     v = v + acceleration*latency;
     cte = cte + v * sin(epsi) * latency;
     epsi = epsi + v*(-delta) / Mpc::Lf * latency;

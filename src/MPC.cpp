@@ -10,15 +10,11 @@ using CppAD::AD;
 
 class FG_eval 
 {
-  // Fitted polynomial coefficients
   Eigen::VectorXd _coeffs;
-
   vector<double> _weights;
-
   double ref_v;
-public:
 
-  
+public:
   FG_eval(Eigen::VectorXd coeffs, const vector<double>& weights, double ref_v)
     : _coeffs(coeffs), _weights(weights), ref_v(ref_v)
   {

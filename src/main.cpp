@@ -196,7 +196,7 @@ int main(int argc, char **argv)
           VehicleState vState = { 0, 0, v, psi, cte, epsi, d, a };
 
           // 5.) Predict state in 100ms
-          const auto future_state = vState.State();
+          const auto future_state = vState.FutureState();
 
           // 6.) Call MPC solver and retrieve optimal trajectory
           const auto mpcOutput = mpc.Solve(future_state, coeffs);

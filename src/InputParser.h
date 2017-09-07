@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <bits/stringfwd.h>
+#include <string>
 #include <algorithm>
 
 using namespace std;
