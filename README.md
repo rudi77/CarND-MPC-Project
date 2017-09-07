@@ -3,6 +3,8 @@
 
 This is the last project of the second term. The objective of this project is to implement a model predictive controller that is able to drive the car in the simulator safely around the lake track.
 
+I recorded a video where the car is driving around the lake track: (https://github.com/rudi77/CarND-MPC-Project/blob/master/video/mpc.mp4)
+
 ## Program Usage
 - Clone the project from (https://github.com/rudi77/CarND-MPC-Project.git)
 - Install all dependencies, see "Dependencies" below.
